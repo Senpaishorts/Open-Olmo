@@ -1,6 +1,6 @@
 # Open-OLMo
 
-<p align="center">
+<p align="left">
   <a href="https://twitter.com/kyegomezb">
     <picture>
       <source srcset="https://img.shields.io/badge/Twitter-Follow-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" media="(prefers-color-scheme: dark)">
