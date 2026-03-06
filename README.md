@@ -1,5 +1,38 @@
 # Open-OLMo
 
+<p align="center">
+  <a href="https://twitter.com/kyegomezb">
+    <picture>
+      <source srcset="https://img.shields.io/badge/Twitter-Follow-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" media="(prefers-color-scheme: dark)">
+      <img src="https://img.shields.io/badge/Twitter-Follow-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter">
+    </picture>
+  </a>
+  <a href="https://discord.gg/EamjgSaEQf">
+    <picture>
+      <source srcset="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" media="(prefers-color-scheme: dark)">
+      <img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
+    </picture>
+  </a>
+  <a href="https://pytorch.org/">
+    <picture>
+      <source srcset="https://img.shields.io/badge/Built%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" media="(prefers-color-scheme: dark)">
+      <img src="https://img.shields.io/badge/Built%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
+    </picture>
+  </a>
+  <a href="https://github.com/kyegomez/Open-Olmo/stargazers">
+    <picture>
+      <source srcset="https://img.shields.io/github/stars/kyegomez/Open-Olmo?style=for-the-badge&color=FFD700" media="(prefers-color-scheme: dark)">
+      <img src="https://img.shields.io/github/stars/kyegomez/Open-Olmo?style=for-the-badge&color=FFD700" alt="GitHub Stars">
+    </picture>
+  </a>
+  <a href="https://allenai.org/blog/olmohybrid">
+    <picture>
+      <source srcset="https://img.shields.io/badge/Based%20on-OLMo%20Hybrid-4B9CD3?style=for-the-badge&logo=semanticweb&logoColor=white" media="(prefers-color-scheme: dark)">
+      <img src="https://img.shields.io/badge/Based%20on-OLMo%20Hybrid-4B9CD3?style=for-the-badge&logo=semanticweb&logoColor=white" alt="OLMo Hybrid">
+    </picture>
+  </a>
+</p>
+
 **Unofficial** open-source PyTorch implementation of the OLMo Hybrid architecture introduced by the Allen Institute for AI (Ai2).
 
 > This repository is an independent community re-implementation and is not affiliated with, endorsed by, or officially supported by Ai2.
