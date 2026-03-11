@@ -25,7 +25,7 @@
       <img src="https://img.shields.io/github/stars/kyegomez/Open-Olmo?style=for-the-badge&color=FFD700" alt="GitHub Stars">
     </picture>
   </a>
-  <a href="[https://allenai.org/blog/olmohybrid](https://huggingface.co/Qwen/Qwen3.5-27B)">
+  <a href="https://allenai.org/blog/olmohybrid">
     <picture>
       <source srcset="https://img.shields.io/badge/Based%20on-OLMo%20Hybrid-4B9CD3?style=for-the-badge&logo=semanticweb&logoColor=white" media="(prefers-color-scheme: dark)">
       <img src="https://img.shields.io/badge/Based%20on-OLMo%20Hybrid-4B9CD3?style=for-the-badge&logo=semanticweb&logoColor=white" alt="OLMo Hybrid">
